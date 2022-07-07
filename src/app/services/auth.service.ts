@@ -20,7 +20,7 @@ export class AuthService {
     private router: Router
   ) {
     this.user$ = this.afAuth.authState.pipe(
-      switchMap((user) => {
+      switchMap(user => {
         if (user) {
           return this.afs.doc<User>(`users/${user.uid}`).valueChanges();
         } else {
@@ -29,6 +29,7 @@ export class AuthService {
       })
     );
   }
+
 
   async googleSignin() {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -43,13 +44,14 @@ export class AuthService {
 
   private updateUserData(user: User) {
     // Sets user data to firestore on login
-    const userRef: AngularFirestoreDocument<User> = this.afs.doc(
-      `users/${user.uid}`
-    );
+    const userRef: AngularFirestoreDocument<User> = this.afs.doc(`users/${user.uid}`);
 
     const data = {
       uid: user.uid,
       email: user.email,
+      displayName: user.displayName,
+
+      photoURL: user.photoURL
     };
 
     return userRef.set(data, { merge: true });
