@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { auth } from 'firebase/app';
-import { AngularFireAuth } from '@angular/fire/auth';
-import {
-  AngularFirestore,
-  AngularFirestoreDocument
-} from '@angular/fire/firestore';
+import firebase from 'firebase/compat/app';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { AngularFirestoreDocument } from '@angular/fire/compat/firestore';
 
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -22,7 +20,7 @@ export class AuthService {
     private router: Router
   ) {
     this.user$ = this.afAuth.authState.pipe(
-      switchMap(user => {
+      switchMap((user) => {
         if (user) {
           return this.afs.doc<User>(`users/${user.uid}`).valueChanges();
         } else {
@@ -32,32 +30,28 @@ export class AuthService {
     );
   }
 
-
   async googleSignin() {
-    const provider = new auth.GoogleAuthProvider();
-    const credential = await this.afAuth.auth.signInWithPopup(provider);
-    return this.updateUserData(credential.user);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const credential = await this.afAuth.signInWithPopup(provider);
+    return this.updateUserData(credential.user as User);
   }
 
   async signOut() {
-    await this.afAuth.auth.signOut();
+    await this.afAuth.signOut();
     return this.router.navigate(['/']);
   }
 
-  private updateUserData(user) {
+  private updateUserData(user: User) {
     // Sets user data to firestore on login
-    const userRef: AngularFirestoreDocument<User> = this.afs.doc(`users/${user.uid}`);
+    const userRef: AngularFirestoreDocument<User> = this.afs.doc(
+      `users/${user.uid}`
+    );
 
     const data = {
       uid: user.uid,
       email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL
     };
 
     return userRef.set(data, { merge: true });
-
   }
-
 }
-
